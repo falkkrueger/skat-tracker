@@ -85,7 +85,7 @@
 const suits = ["♣", "♠", "♥", "♦"];
 const suitNames = { "♣": "Kreuz", "♠": "Pik", "♥": "Herz", "♦": "Karo" };
 
-// Zwei Sortierlisten: eine für Null, eine für Farb-/Grandspiel
+// Sortierungen
 const sortOrderNormal = ["B", "A", "10", "K", "D", "9", "8", "7"];
 const sortOrderNull = ["A", "10", "K", "D", "B", "9", "8", "7"];
 
@@ -136,8 +136,8 @@ function updateControls() {
   const type = document.getElementById('gameType').value;
   const trumpfSelector = document.getElementById('trumpfColor');
   trumpfSelector.style.display = (type === "farbe") ? "inline" : "none";
-  renderBoard(); // Neu rendern wegen anderer Sortierung
-  updateTrumpf();
+  renderBoard();  // Neu aufbauen, weil Sortierung sich ändern kann
+  updateTrumpf(); // Danach Trumpf-Markierungen setzen (falls nötig)
 }
 
 function updateTrumpf() {
@@ -153,6 +153,7 @@ function updateTrumpf() {
   } else if (type === "farbe") {
     cards.filter(c => c.suit === selectedTrumpf || c.value === "B").forEach(c => c.element.classList.add('trumpf'));
   }
+  // Bei "Null" gibt es keine Trumpfmarkierungen - nichts machen
 }
 
 function resetCards() {
