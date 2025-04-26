@@ -85,15 +85,24 @@
 const suits = ["♣", "♠", "♥", "♦"];
 const suitNames = { "♣": "Kreuz", "♠": "Pik", "♥": "Herz", "♦": "Karo" };
 
-// Sortierung: B, A, 10, K, D, 9, 8, 7 (von stark bis Lusche)
-const sortOrder = ["B", "A", "10", "K", "D", "9", "8", "7"];
+// Zwei Sortierlisten: eine für Null, eine für Farb-/Grandspiel
+const sortOrderNormal = ["B", "A", "10", "K", "D", "9", "8", "7"];
+const sortOrderNull = ["A", "10", "K", "D", "B", "9", "8", "7"];
 
 let cards = [];
 
 function init() {
+  renderBoard();
+  updateTrumpf();
+}
+
+function renderBoard() {
+  const type = document.getElementById('gameType').value;
   const board = document.getElementById('board');
   board.innerHTML = '';
   cards = [];
+
+  const order = (type === "null") ? sortOrderNull : sortOrderNormal;
 
   suits.forEach(suit => {
     const column = document.createElement('div');
@@ -102,7 +111,7 @@ function init() {
     heading.textContent = suitNames[suit];
     column.appendChild(heading);
 
-    sortOrder.forEach(value => {
+    order.forEach(value => {
       const card = {
         suit: suit,
         value: value,
@@ -117,8 +126,6 @@ function init() {
 
     board.appendChild(column);
   });
-
-  updateTrumpf();
 }
 
 function toggleCard(card) {
@@ -129,6 +136,7 @@ function updateControls() {
   const type = document.getElementById('gameType').value;
   const trumpfSelector = document.getElementById('trumpfColor');
   trumpfSelector.style.display = (type === "farbe") ? "inline" : "none";
+  renderBoard(); // Neu rendern wegen anderer Sortierung
   updateTrumpf();
 }
 
