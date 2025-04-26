@@ -56,6 +56,15 @@
       opacity: 0.4;
       text-decoration: line-through;
     }
+    .card.handcard {
+      background: #90ee90; /* hellgrün für Handkarten */
+      border-color: green;
+    }
+    #counter {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 18px;
+    }
   </style>
 </head>
 <body>
@@ -77,9 +86,12 @@
   </select>
 
   <button onclick="resetCards()">Zurücksetzen</button>
+  <button onclick="toggleHandMode()">Handkarten Modus</button>
 </div>
 
 <div class="board" id="board"></div>
+
+<div id="counter"></div>
 
 <script>
 const suits = ["♣", "♠", "♥", "♦"];
@@ -90,6 +102,7 @@ const sortOrderNormal = ["B", "A", "10", "K", "D", "9", "8", "7"];
 const sortOrderNull = ["A", "10", "K", "D", "B", "9", "8", "7"];
 
 let cards = [];
+let handMode = false; // Umschalten zwischen "Handkarte markieren" und "gefallen"
 
 function init() {
   renderBoard();
@@ -126,18 +139,30 @@ function renderBoard() {
 
     board.appendChild(column);
   });
+
+  updateCounter();
 }
 
 function toggleCard(card) {
-  card.element.classList.toggle('checked');
+  if (handMode) {
+    card.element.classList.toggle('handcard');
+  } else {
+    card.element.classList.toggle('checked');
+  }
+  updateCounter();
+}
+
+function toggleHandMode() {
+  handMode = !handMode;
+  document.querySelector('button[onclick="toggleHandMode()"]').innerText = handMode ? "Handkarten Modus (An)" : "Handkarten Modus (Aus)";
 }
 
 function updateControls() {
   const type = document.getElementById('gameType').value;
   const trumpfSelector = document.getElementById('trumpfColor');
   trumpfSelector.style.display = (type === "farbe") ? "inline" : "none";
-  renderBoard();  // Neu aufbauen, weil Sortierung sich ändern kann
-  updateTrumpf(); // Danach Trumpf-Markierungen setzen (falls nötig)
+  renderBoard();
+  updateTrumpf();
 }
 
 function updateTrumpf() {
@@ -153,11 +178,22 @@ function updateTrumpf() {
   } else if (type === "farbe") {
     cards.filter(c => c.suit === selectedTrumpf || c.value === "B").forEach(c => c.element.classList.add('trumpf'));
   }
-  // Bei "Null" gibt es keine Trumpfmarkierungen - nichts machen
 }
 
 function resetCards() {
-  cards.forEach(card => card.element.classList.remove('checked'));
+  cards.forEach(card => {
+    card.element.classList.remove('checked', 'handcard');
+  });
+  handMode = false;
+  document.querySelector('button[onclick="toggleHandMode()"]').innerText = "Handkarten Modus";
+  updateCounter();
+}
+
+function updateCounter() {
+  const totalCards = 32;
+  const fallenCards = cards.filter(c => c.element.classList.contains('checked')).length;
+  const remaining = totalCards - fallenCards;
+  document.getElementById('counter').innerText = `Noch ${remaining} Karten im Spiel`;
 }
 
 init();
