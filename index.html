@@ -57,7 +57,7 @@
       text-decoration: line-through;
     }
     .card.handcard {
-      background: #90ee90; /* hellgrün für Handkarten */
+      background: #90ee90;
       border-color: green;
     }
     #counter {
@@ -97,12 +97,18 @@
 const suits = ["♣", "♠", "♥", "♦"];
 const suitNames = { "♣": "Kreuz", "♠": "Pik", "♥": "Herz", "♦": "Karo" };
 
-// Sortierungen
+// Punktwerte pro Karte
+const pointValues = {
+  "7": 0, "8": 0, "9": 0,
+  "10": 10, "B": 2, "D": 3, "K": 4, "A": 11
+};
+
+// Zwei Sortierlisten
 const sortOrderNormal = ["B", "A", "10", "K", "D", "9", "8", "7"];
 const sortOrderNull = ["A", "10", "K", "D", "B", "9", "8", "7"];
 
 let cards = [];
-let handMode = false; // Umschalten zwischen "Handkarte markieren" und "gefallen"
+let handMode = false;
 
 function init() {
   renderBoard();
@@ -113,6 +119,8 @@ function renderBoard() {
   const type = document.getElementById('gameType').value;
   const board = document.getElementById('board');
   board.innerHTML = '';
+
+  const savedStates = saveCardStates();
   cards = [];
 
   const order = (type === "null") ? sortOrderNull : sortOrderNormal;
@@ -140,7 +148,33 @@ function renderBoard() {
     board.appendChild(column);
   });
 
+  restoreCardStates(savedStates);
   updateCounter();
+}
+
+function saveCardStates() {
+  const states = {};
+  cards.forEach(card => {
+    states[card.value + card.suit] = {
+      checked: card.element.classList.contains('checked'),
+      handcard: card.element.classList.contains('handcard')
+    };
+  });
+  return states;
+}
+
+function restoreCardStates(states) {
+  cards.forEach(card => {
+    const key = card.value + card.suit;
+    if (states[key]) {
+      if (states[key].checked) {
+        card.element.classList.add('checked');
+      }
+      if (states[key].handcard) {
+        card.element.classList.add('handcard');
+      }
+    }
+  });
 }
 
 function toggleCard(card) {
@@ -181,9 +215,7 @@ function updateTrumpf() {
 }
 
 function resetCards() {
-  cards.forEach(card => {
-    card.element.classList.remove('checked', 'handcard');
-  });
+  cards.forEach(card => card.element.classList.remove('checked', 'handcard'));
   handMode = false;
   document.querySelector('button[onclick="toggleHandMode()"]').innerText = "Handkarten Modus";
   updateCounter();
@@ -193,7 +225,12 @@ function updateCounter() {
   const totalCards = 32;
   const fallenCards = cards.filter(c => c.element.classList.contains('checked')).length;
   const remaining = totalCards - fallenCards;
-  document.getElementById('counter').innerText = `Noch ${remaining} Karten im Spiel`;
+
+  const remainingPoints = cards
+    .filter(c => !c.element.classList.contains('checked'))
+    .reduce((sum, c) => sum + (pointValues[c.value] || 0), 0);
+
+  document.getElementById('counter').innerText = `Noch ${remaining} Karten im Spiel (${remainingPoints} Punkte übrig)`;
 }
 
 init();
