@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Skat Tracker</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 10px;
+      background: #f2f2f2;
+    }
+    h1 {
+      text-align: center;
+    }
+    .controls {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+    select, button {
+      padding: 8px;
+      margin: 5px;
+      font-size: 16px;
+    }
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+      gap: 8px;
+    }
+    .card {
+      background: white;
+      border: 2px solid black;
+      padding: 10px;
+      text-align: center;
+      font-size: 18px;
+      border-radius: 8px;
+      user-select: none;
+    }
+    .card.trumpf {
+      background: #ffd700;
+    }
+    .card.checked {
+      opacity: 0.4;
+      text-decoration: line-through;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Skat Tracker</h1>
+
+<div class="controls">
+  <select id="gameType" onchange="updateControls()">
+    <option value="farbe">Farbspiel</option>
+    <option value="grand">Grand</option>
+    <option value="null">Null</option>
+  </select>
+
+  <select id="trumpfColor" onchange="updateTrumpf()" style="display: inline;">
+    <option value="♣">Kreuz ♣</option>
+    <option value="♠">Pik ♠</option>
+    <option value="♥" selected>Herz ♥</option>
+    <option value="♦">Karo ♦</option>
+  </select>
+
+  <button onclick="resetCards()">Zurücksetzen</button>
+</div>
+
+<div class="cards" id="cards"></div>
+
+<script>
+const suits = ["♠", "♥", "♣", "♦"];
+const values = ["7", "8", "9", "10", "B", "D", "K", "A"];
+
+let cards = [];
+
+function init() {
+  const cardsDiv = document.getElementById('cards');
+  cardsDiv.innerHTML = '';
+  cards = [];
+
+  suits.forEach(suit => {
+    values.forEach(value => {
+      const card = {
+        suit: suit,
+        value: value,
+        element: document.createElement('div')
+      };
+      card.element.className = 'card';
+      card.element.innerText = value + suit;
+      card.element.onclick = () => toggleCard(card);
+      cardsDiv.appendChild(card.element);
+      cards.push(card);
+    });
+  });
+
+  updateTrumpf();
+}
+
+function toggleCard(card) {
+  card.element.classList.toggle('checked');
+}
+
+function updateControls() {
+  const type = document.getElementById('gameType').value;
+  const trumpfSelector = document.getElementById('trumpfColor');
+  trumpfSelector.style.display = (type === "farbe") ? "inline" : "none";
+  updateTrumpf();
+}
+
+function updateTrumpf() {
+  const type = document.getElementById('gameType').value;
+  const selectedTrumpf = document.getElementById('trumpfColor').value;
+
+  cards.forEach(card => {
+    card.element.classList.remove('trumpf');
+  });
+
+  if (type === "grand") {
+    cards.filter(c => c.value === "B").forEach(c => c.element.classList.add('trumpf'));
+  } else if (type === "farbe") {
+    cards.filter(c => c.suit === selectedTrumpf || c.value === "B").forEach(c => c.element.classList.add('trumpf'));
+  }
+}
+
+function resetCards() {
+  cards.forEach(card => card.element.classList.remove('checked'));
+}
+
+init();
+</script>
+
+</body>
+</html>
